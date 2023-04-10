@@ -1,0 +1,71 @@
+version: "3.7"
+services:
+  gramapp:
+    build:
+      context: ./php/
+      dockerfile: Dockerfile
+    image: gram-php8.1-image
+    container_name: gram-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./../:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - gram-app-network
+
+  gramdb:
+    image: mysql:5.7
+    container_name: gram-db
+    restart: unless-stopped
+    ports:
+      - "7407:3306"
+    environment:
+      MYSQL_DATABASE: gram-app
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_USER: root
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+      - ./mysql/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+    depends_on:
+      - gramapp
+    networks:
+      - gram-app-network
+
+  gramnginx:
+    image: nginx:alpine
+    container_name: gram-nginx
+    restart: unless-stopped
+    ports:
+      - 8162:80
+    volumes:
+      - ./../:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - gram-data:/var/lib/mysql
+    depends_on:
+      - gramapp
+    networks:
+      - gram-app-network
+
+  gramphpmyadmin:
+    image: phpmyadmin
+    container_name: gram-phpmyadmin
+    restart: always
+    ports:
+      - 7162:80
+    environment:
+      - PMA_HOST=gramdb
+      - PMA_PASSWORD=root
+    networks:
+      - gram-app-network
+
+volumes:
+    gram-data:
+
+networks:
+  gram-app-network:
+    external:
+        name: server_webserver-network
