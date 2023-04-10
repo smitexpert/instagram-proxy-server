@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
+Route::get('proxy', [App\Http\Controllers\InstagramController::class, 'proxy']);
+
 Route::get('user/info/{username}', [App\Http\Controllers\InstagramController::class, 'user']);
 Route::get('user/feed/{username}', [App\Http\Controllers\InstagramController::class, 'feed']);
 Route::get('user/reels/{username}', [App\Http\Controllers\InstagramController::class, 'reels']);

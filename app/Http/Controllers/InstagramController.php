@@ -2,16 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Instagram\Api;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class InstagramController extends Controller
 {
+    public $client;
+
+    public function __construct()
+    {
+        $this->client = new Client([
+            'proxy' => [
+                'https' => '64.225.8.191:9993' #this is a dummy example, change with your proxy
+               #'https' => 'login:password@ip:port
+            ]
+        ]);
+    }
+
     public function user($username)
     {
         $cachePool = new FilesystemAdapter('Instagram', 0, __DIR__ . '/../cache');
-        $api = new Api($cachePool);
+        $api = new Api($cachePool, $this->client);
 
         try {
             $api->login(config('services.insta.username'), config('services.insta.password')); // mandatory
@@ -177,5 +190,21 @@ class InstagramController extends Controller
                 'error' => $th
             ];
         }
+    }
+
+    public function proxy()
+    {
+        $client = new Client([
+            'proxy' => [
+                'https' => '64.225.8.191:9993' #this is a dummy example, change with your proxy
+               #'https' => 'login:password@ip:port
+            ]
+        ]);
+
+        $data   = $client->request('GET', 'https://api.ipify.org?format=json');
+        $dataIp = json_decode((string)$data->getBody());
+        return [
+            'message' => 'IP for Instagram requests : ' . $dataIp->ip . "\n"
+        ];
     }
 }
