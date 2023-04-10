@@ -14,10 +14,12 @@ class InstagramController extends Controller
     public function __construct()
     {
         $this->client = new Client([
-            'proxy' => [
-                'https' => '64.225.8.191:9993' #this is a dummy example, change with your proxy
-               #'https' => 'login:password@ip:port
-            ]
+            // 'proxy' => [
+            //     'https' => '117.2.28.235:55443' #this is a dummy example, change with your proxy
+            //    #'https' => 'login:password@ip:port
+            // ],
+            // 'verify' => false,
+            'proxy' => 'http://maxuplol:vkp9kb4e3olk@188.74.210.207:6286'
         ]);
     }
 
@@ -66,7 +68,7 @@ class InstagramController extends Controller
         }
 
         $cachePool = new FilesystemAdapter('Instagram', 0, __DIR__ . '/../cache');
-        $api = new Api($cachePool);
+        $api = new Api($cachePool, $this->client);
 
         try {
             $api->login(config('services.insta.username'), config('services.insta.password')); // mandatory
@@ -134,7 +136,7 @@ class InstagramController extends Controller
         }
 
         $cachePool = new FilesystemAdapter('Instagram', 0, __DIR__ . '/../cache');
-        $api = new Api($cachePool);
+        $api = new Api($cachePool, $this->client);
 
         try {
             $api->login(config('services.insta.username'), config('services.insta.password')); // mandatory
@@ -194,14 +196,14 @@ class InstagramController extends Controller
 
     public function proxy()
     {
-        $client = new Client([
-            'proxy' => [
-                'https' => '64.225.8.191:9993' #this is a dummy example, change with your proxy
-               #'https' => 'login:password@ip:port
-            ]
-        ]);
+        // $client = new Client([
+        //     'proxy' => [
+        //         'https' => '64.225.8.191:9993' #this is a dummy example, change with your proxy
+        //        #'https' => 'login:password@ip:port
+        //     ]
+        // ]);
 
-        $data   = $client->request('GET', 'https://api.ipify.org?format=json');
+        $data   = $this->client->request('GET', 'https://api.ipify.org?format=json');
         $dataIp = json_decode((string)$data->getBody());
         return [
             'message' => 'IP for Instagram requests : ' . $dataIp->ip . "\n"
